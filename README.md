@@ -24,10 +24,8 @@ the streaming action validates/dispatches against the correct member type at run
 
 ### Why I Chose This Issue
 
-- It's a `good first issue` / `priority/high` bug — well-scoped and valued by maintainers.
-- The fix is bounded: a typing change plus dispatch logic plus a test, not a large refactor.
-- It maps to skills I have or can ramp on quickly: Python typing (`Union`, `types.UnionType`, PEP 604) and Pydantic.
-- Strong context: the issue has a concrete reproduction example and two reference PRs.
+- It's a `good first issue` / `priority/high` bug — well-scoped and valued by maintainers. I'm interested in AI/ML and infrastructure, so I think it'll help improve my skills in understanding and exploring more on apache/burr codebase and features. Moreover, I'm also experienced in Python and have worked with it before, so it's a good fit for me to work with the maintainer to get it done.
+
 
 ### Known Risk (tracking)
 
@@ -35,7 +33,7 @@ Two PRs already attempt this fix and are **open / stalled in maintainer discussi
 - [#732](https://github.com/apache/burr/pull/732) (mvanhorn) — adds `types.UnionType` support + 3.9 compat shim + tests.
 - [#754](https://github.com/apache/burr/pull/754) (Ghraven) — maintainer flagged the "loosen to `object`" approach as too permissive.
 
-**My plan:** study why the maintainer rejected both approaches, and aim for the suggested direction
+**My plan:** study why the maintainer have not merged both approaches, and aim for the suggested direction
 (accept `UnionType` in the annotation while doing per-instance dispatch during validation). Will confirm
 with a mentor that this issue is still worth pursuing given the open PRs.
 
