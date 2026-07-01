@@ -4,10 +4,10 @@
 
 - **Project:** Apache Burr (incubating)
 - **GitHub:** https://github.com/apache/burr
-- **Issue:** Support Union Types in `@streaming_action.pydantic()` decorator
+- **Issue:** [#607 — Streaming Event type, type hint, should support union type](https://github.com/apache/burr/issues/607)
 - **Working Branch:** `fix/stream_type_support_union_type`
 - **Fork:** https://github.com/ThyTran1402/burr/tree/fix/stream_type_support_union_type
-- **Status:** Phase II Complete - Issue Reproduced & Plan Documented
+- **Status:** Phase IV Complete — PR submitted, awaiting review
 
 ---
 
@@ -373,3 +373,50 @@ This one-line change (plus documentation) enables full union type support.
 - [x] Ready for mentor review
 
 **Status: Phase II Complete **
+
+---
+
+## Phase IV — Submit & Iterate
+
+> **Note:** The final implementation went slightly beyond the Phase II plan. In
+> addition to broadening the type annotation, it **adds runtime validation**
+> (`_is_valid_stream_type`) so that invalid `stream_type` values now fail fast with a
+> clear `ValueError`. This directly answers the "Questions for Review" above
+> (runtime validation *was* added). The "No Runtime Changes" note in the earlier
+> sections reflects the original Phase II plan, not the final submitted code.
+
+- **PR Link:** `<PASTE PR URL HERE AFTER OPENING — e.g. https://github.com/apache/burr/pull/XXX>`
+- **Contribution:** Added union-type support to Apache Burr's
+  `@streaming_action.pydantic()` `stream_type` parameter, so a streaming action can
+  declare that it yields one of several Pydantic models (`Model1 | Model2` or
+  `Union[Model1, Model2]`). Broadened the `PartialType` annotation, added a recursive
+  runtime validator (`_is_valid_stream_type`) that accepts `dict`, `BaseModel`
+  subclasses, and unions of those (both `typing.Union` and PEP 604 `|` forms) while
+  rejecting invalid types with an informative error, and updated the docstring.
+- **Issue:** Closes [apache/burr#607](https://github.com/apache/burr/issues/607)
+
+### Files Changed (vs `apache/burr:main`)
+
+| File | Change |
+|---|---|
+| `burr/core/action.py` | Broadened `stream_type` annotation + docstring |
+| `burr/integrations/pydantic.py` | Broadened `PartialType`, added `_is_valid_stream_type`, added validation in `_validate_and_extract_signature_types_streaming` |
+| `tests/integrations/test_streaming_union_types.py` | New — 10 tests (backward compat, both union syntaxes, invalid-type rejection, async, runtime execution) |
+
+### Verification
+
+- `python -m pytest tests/integrations/test_streaming_union_types.py` → **10 passed**
+- Existing pydantic integration tests → still passing (backward compatible)
+- Diff against `apache/burr:main` is limited to the 3 files above (no scope creep)
+
+### Maintainer Feedback
+
+_None yet — awaiting first review._
+
+### Status
+
+**Awaiting review**
+
+---
+
+**Phase IV Complete.**
