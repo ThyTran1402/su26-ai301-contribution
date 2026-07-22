@@ -1,7 +1,7 @@
 # Contribution README — CodePath AI301 (Su26)
 
 **Contributor:** Thy Tran (@ThyTran1402)
-**Status:** Phase II Complete — fix implemented and PR open ([opensearch-project/k-NN#3419](https://github.com/opensearch-project/k-NN/pull/3419), awaiting review)
+**Status:** Phase III Complete — CI errors resolved and CI passing on [opensearch-project/k-NN#3419](https://github.com/opensearch-project/k-NN/pull/3419) (1 approval); follow-up CI-workflow fix open as [#3422](https://github.com/opensearch-project/k-NN/pull/3422)
 
 ---
 
@@ -176,8 +176,50 @@ been executed on this Windows machine.
 
 ## Phase III — Implement & Test
 
-- **Testing strategy:** _TODO_
-- **Implementation notes:** _TODO_
+### Implementation notes
+
+- The fix itself (the table in Phase II: remove `@AwaitsFix`, replace the degenerate
+  `m=2`/`ef_construction=2` build parameters with the suite constants `M=50` /
+  `EF_CONSTRUCTION=1024` in `WarmupIT` + sibling `IndexingIT`, repair the emptied
+  legacy-settings builder in `KNNRestTestCase`/`TestUtils`, CHANGELOG entry) was
+  implemented on branch `fix/2415-flaky-warmup-custom-legacy` and submitted upstream
+  as [PR #3419](https://github.com/opensearch-project/k-NN/pull/3419) on 2026-07-10.
+- During review the branch was rebased onto upstream `main` twice (force-pushes on
+  2026-07-13 and 2026-07-17) to pick up upstream CI fixes; it now sits at a single
+  DCO-signed commit `c804608`.
+
+### Testing strategy
+
+- Local Windows runs cover compilation and `spotless` formatting. The BWC harness
+  (multi-node clusters + native libraries) is Linux-oriented, so the project's
+  GitHub Actions BWC workflows are the verification environment for the un-muted
+  test: the `:qa:restart-upgrade:testRestartUpgrade` and
+  `:qa:rolling-upgrade:testRollingUpgrade` jobs across the CI BWC-version matrix,
+  plus maintainer-triggered re-runs to probe for residual flakiness.
+- Codecov on the PR reports all modified lines covered (project coverage 83.91%).
+
+### CI errors encountered and fixed
+
+Getting the PR green surfaced two separate CI problems; both are handled:
+
+1. **Unrelated flaky failures — recall-threshold validation with remote index
+   builds.** After the 2026-07-13 approval, CI runs on the PR started failing in
+   recall-threshold checks. @kotwanikunal triaged it ("Seems to be related to recall
+   threshold validation with remote builds") and re-ran the jobs; @navneet1v pointed
+   to an upstream fix already landed for the recall tests and advised rebasing
+   ("the fix has been added for the recall test. Lets rebase the code and then
+   things should pass"). Rebasing onto `main` (the 2026-07-17 force-push to
+   `c804608`) picked up that fix and cleared these failures.
+2. **A real bug in the BWC CI workflow itself, found while debugging #3419's CI.**
+   The Rolling-Upgrade job in
+   `.github/workflows/backwards_compatibility_tests_workflow.yml` invoked
+   `./gradlew :qa:rolling-upgrade:testRollingUpgrade -Dtests.bwc.version=$BWC_VERSION_RESTART_UPGRADE`
+   — a copy-paste bug that feeds the *restart*-upgrade version into the
+   *rolling*-upgrade suite, causing hardware-dependent CI failures. Fixed in
+   follow-up [PR #3422](https://github.com/opensearch-project/k-NN/pull/3422)
+   ("fixed bwc version rolling upgrade", opened 2026-07-11): a one-line correction
+   to `$BWC_VERSION_ROLLING_UPGRADE` plus a CHANGELOG "Infrastructure" entry.
+   Status: open, awaiting code-owner review.
 
 ## Phase IV — Pull Request
 
@@ -191,4 +233,14 @@ been executed on this Windows machine.
   legacy `index.knn.space_type` / `algo_param.m` / `algo_param.ef_construction` settings
   are actually applied again (they were silently dropped by the 3.0 breaking-changes
   PR #2564). Includes a CHANGELOG entry.
-- **Maintainer feedback log:** _None yet — awaiting first review._
+- **Maintainer feedback log:**
+  - **2026-07-13 — @kotwanikunal approved** the PR (first of the 2 required approving
+    reviews; 10 other code owners still pending).
+  - **2026-07-14 — @kotwanikunal** on the post-approval CI failures: "Seems to be
+    related to recall threshold validation with remote builds. I have re-run to
+    validate if it's flaky."
+  - **2026-07-14 — @navneet1v:** "the fix has been added for the recall test. Lets
+    rebase the code and then things should pass" — done via the 2026-07-17 rebase
+    (see Phase III).
+  - Follow-up [PR #3422](https://github.com/opensearch-project/k-NN/pull/3422)
+    (CI workflow fix) opened 2026-07-11; awaiting code-owner review.
